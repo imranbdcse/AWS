@@ -1,1 +1,41 @@
+name: MySQL
 
+on:
+  push:
+    branches:
+      - main
+      - DataScience
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mysql:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: testdb
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify MySQL connection
+        env:
+          MYSQL_PWD: root
+        run: |
+          mysql -h 127.0.0.1 -u root -e "SELECT VERSION();"
+          mysql -h 127.0.0.1 -u root -e "SHOW DATABASES;"
+          echo "MySQL connection verified successfully"
